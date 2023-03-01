@@ -139,7 +139,7 @@ def _move_file(file_name):
     shutil.move(f"{file_path}/in/{file_name}", f"{file_path}/out/{file_name}")
 
 
-with DAG("task_1", start_date=datetime(2023, 2, 10), schedule_interval="*/1 * * * *", catchup=False) as dag:
+with DAG("task_1_1", start_date=datetime(2023, 2, 10), schedule_interval="*/1 * * * *", catchup=False) as dag:
 
     csv_files = _check_csv_files_in_directory()
 

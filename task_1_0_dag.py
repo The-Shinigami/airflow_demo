@@ -49,7 +49,7 @@ def _move_file():
     shutil.move(file_path+'/in/data.csv', file_path+'/out/data.csv')
 # -------------------------------------------------
 
-with DAG("my_dag",
+with DAG("task_1_0",
     start_date=datetime(2023,2,10),
     schedule_interval="*/1 * * * *",
     catchup=False) as dag:
