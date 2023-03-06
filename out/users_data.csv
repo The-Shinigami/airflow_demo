@@ -1,6 +1,8 @@
 id,email,date,role
-1,au@au.com,02-05-2000,au
-2,b@b.com,05-04-2020,b
-3,c@c.com,15-07-2010,c
-4,RRRR@RRR.com,08-12-2021,RRR
-10,FFFF@FFF.com,08-12-2021,FFF
+1,alex@docaposte.com,02-05-2000,admin
+2,mohammed@docaposte.com,05-04-2020,user
+3,ibrahim@docaposte.com,15-07-2010,user
+4,ali@docaposte.com,08-12-2021,user
+5,nesrin@docaposte.com,08-12-2021,default
+6,karima@docaposte.com,08-12-2021,user
+7,omar@docaposte.com,08-12-2021,admin

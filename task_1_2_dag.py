@@ -19,7 +19,7 @@ def _get_file(task_instance):
     print(files)
     if len(files) > 0:
         task_instance.xcom_push(key="files",value=files)
-        return "validate_file"
+   
 # -------------------------------------------------
 def _validate_file(task_instance):
     files = task_instance.xcom_pull(task_ids="get_file",key="files")
@@ -60,7 +60,7 @@ def _insert_data_db(task_instance):
     conn = pg_hook.get_conn()
     cursor = conn.cursor()
    
-    all_users_sql ="SELECT * FROM task;"
+    all_users_sql ="SELECT * FROM users;"
     cursor.execute(all_users_sql)
     all_users = cursor.fetchall()
 
@@ -73,7 +73,7 @@ def _insert_data_db(task_instance):
         user_existed = all_users_dict.get(row['id']) != None
         if user_existed :
             update_sql = """
-            UPDATE task
+            UPDATE users
             SET email = %s, date = %s, role = %s
             WHERE id = %s
             """
@@ -81,7 +81,7 @@ def _insert_data_db(task_instance):
             cursor.execute(update_sql, values)
         else :
             insert_sql = """
-                INSERT INTO task (id, email, date, role)
+                INSERT INTO users (id, email, date, role)
                 VALUES (%s, %s, %s, %s)
                 ON CONFLICT (id) DO NOTHING
             """
@@ -99,11 +99,13 @@ def _move_file(task_instance):
 
 # -------------------------------------------------
 
+
 with DAG("task_1_2",
     start_date=datetime(2023,2,10),
     schedule_interval="*/1 * * * *",
     catchup=False,
     max_active_runs=1) as dag:
+
 #   File Sensor
     file_path = file_path_in + '/*'
     wait_for_file = FileSensor(
@@ -111,16 +113,18 @@ with DAG("task_1_2",
     filepath=file_path,
     poke_interval=10,
     fs_conn_id = "task_1_file",
-    timeout=30
+    timeout=30,
+    soft_fail=True
 )
 #   Python Tasks
+    get_file = PythonOperator(
+        task_id="get_file",
+        python_callable = _get_file
+
+    )
     insert_data_db = PythonOperator(
         task_id="insert_data",
         python_callable = _insert_data_db
-    )
-    validate_file = PythonOperator(
-        task_id="validate_file",
-        python_callable=_validate_file,
     )
     handle_error = PythonOperator(
         task_id="handle_error",
@@ -130,7 +134,6 @@ with DAG("task_1_2",
     read_file = PythonOperator(
         task_id="read_file",
         python_callable=_read_file,
-        trigger_rule = "all_success"
     )
     move_file = PythonOperator(
         task_id="move_file",
@@ -138,10 +141,12 @@ with DAG("task_1_2",
     )
 
 #   Branch
-    get_file = BranchPythonOperator(
-        task_id="get_file",
-        python_callable = _get_file
+    validate_file = BranchPythonOperator(
+        task_id="validate_file",
+        python_callable=_validate_file,
     )
+
+    
 
     wait_for_file >> get_file >> validate_file >> [read_file,handle_error] 
     read_file >> insert_data_db >> move_file
