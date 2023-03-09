@@ -6,7 +6,7 @@ import pandas as pd
 from airflow.hooks.postgres_hook import PostgresHook
 file_path_in = Variable.get("file_path") + "/in"
 
-@dag("task_1_2_taskflow",
+@dag("task_1_0_taskflow",
     start_date=datetime(2023,2,10),
     schedule_interval="*/2 * * * *",
     catchup=False)
